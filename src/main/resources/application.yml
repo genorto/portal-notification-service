@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: notification-service
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notification-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.type.mapping: |
+          ADVERTISEMENT:com.mipt.notification.event.AdvertisementEvent,
+          USER:com.mipt.notification.event.UserEvent,
+          CHAT:com.mipt.notification.event.ChatEvent,
+          FAVORITE:com.mipt.notification.event.FavoriteEvent,
+          SEARCH_HISTORY:com.mipt.notification.event.SearchHistoryEvent,
+          WALLET:com.mipt.notification.event.WalletEvent,
+          MAINPAGE:com.mipt.notification.event.MainPageEvent,
+          com.mipt.advertisement.event.AdvertisementEvent:com.mipt.notification.event.AdvertisementEvent,
+          com.mipt.user.event.UserEvent:com.mipt.notification.event.UserEvent,
+          com.mipt.chat.event.ChatEvent:com.mipt.notification.event.ChatEvent,
+          com.mipt.search.event.SearchHistoryEvent:com.mipt.notification.event.SearchHistoryEvent,
+          com.mipt.wallet.event.WalletEvent:com.mipt.notification.event.WalletEvent,
+          com.mipt.mainpage.event.MainPageEvent:com.mipt.notification.event.MainPageEvent
+        spring.json.value.default.type: com.mipt.notification.event.BaseEvent
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      max-poll-records: 10
+    listener:
+      ack-mode: manual
+      poll-timeout: 3000
+    properties:
+      session.timeout.ms: 30000
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+server:
+  port: 8082
+
+logging:
+  level:
+    com.mipt.notification: DEBUG
+    org.springframework.kafka: DEBUG
+    org.springframework.mail: DEBUG
+
+kafka:
+  topic:
+    advertisement-events: advertisement-events
+    user-events: user-events
+    chat-events: chat-events
+    favorite-events: favorite-events
+    search-history-events: search-history-events
+    wallet-events: wallet-events
+    mainpage-events: mainpage-events
+
+telegram:
+  bot:
+    token: ${TELEGRAM_BOT_TOKEN:your-bot-token}
+    username: ${TELEGRAM_BOT_USERNAME:your-bot-username}
+    default-chat-id: ${TELEGRAM_DEFAULT_CHAT_ID:}
+    chat-id-map: ${TELEGRAM_CHAT_ID_MAP:}
