@@ -16,51 +16,47 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class NotificationService {
 
-        // Позже добавим реальные сервисы
-        // private final TelegramBotService telegramService;
-        // private final EmailService emailService;
+        private final TelegramNotificationService telegramNotificationService;
 
         public void sendNotification(AdvertisementEvent event) {
                 log.info("Processing notification for event: {}", event.getEventType());
                 String message = formatAdvertisementMessage(event);
-                sendToChannels(event.getAuthorId().toString(), message);
+                sendToChannels(toReceiverKey(event.getAuthorId()), message);
                 log.info("Advertisement notification sent: {}", message);
         }
 
         public void sendUserNotification(UserEvent event) {
                 log.info("Processing user notification for event: {}", event.getEventType());
                 String message = formatUserMessage(event);
-                sendToChannels(event.getUserId().toString(), message);
+                sendToChannels(toReceiverKey(event.getUserId()), message);
                 log.info("User notification sent: {}", message);
         }
 
         public void sendChatNotification(ChatEvent event) {
                 log.info("Processing chat notification for event: {}", event.getEventType());
                 String message = formatChatMessage(event);
-                sendToChannels(event.getReceiverId().toString(), message);
+                sendToChannels(toReceiverKey(event.getReceiverId()), message);
                 log.info("Chat notification sent: {}", message);
         }
 
         public void sendFavoriteNotification(FavoriteEvent event) {
                 log.info("Processing favorite notification for event: {}", event.getEventType());
                 String message = formatFavoriteMessage(event);
-                sendToChannels(event.getUserId().toString(), message);
+                sendToChannels(toReceiverKey(event.getUserId()), message);
                 log.info("Favorite notification sent: {}", message);
         }
 
         public void sendSearchHistoryNotification(SearchHistoryEvent event) {
                 log.info("Processing search history notification");
                 String message = formatSearchHistoryMessage(event);
-                sendToChannels(event.getUserId().toString(), message);
+                sendToChannels(toReceiverKey(event.getUserId()), message);
                 log.info("Search history notification sent: {}", message);
         }
 
         public void sendWalletNotification(WalletEvent event) {
                 log.info("Processing wallet notification for event: {}", event.getEventType());
                 String message = formatWalletMessage(event);
-                String receiver = event.getWalletOwnerId() != null
-                                ? event.getWalletOwnerId().toString()
-                                : "wallet";
+                String receiver = toReceiverKey(event.getWalletOwnerId());
                 sendToChannels(receiver, message);
                 log.info("Wallet notification sent: {}", message);
         }
@@ -68,18 +64,19 @@ public class NotificationService {
         public void sendMainPageNotification(MainPageEvent event) {
                 log.info("Processing mainpage notification for event: {}", event.getEventType());
                 String message = formatMainPageMessage(event);
-                if (event.getUserId() != null) {
-                        sendToChannels(event.getUserId().toString(), message);
-                }
+                sendToChannels(toReceiverKey(event.getUserId()), message);
                 log.info("MainPage notification sent: {}", message);
         }
 
         private void sendToChannels(String userId, String message) {
-                // Отправка в Telegram
-                // telegramService.sendMessage(userId, message);
+                telegramNotificationService.sendMessage(userId, message);
 
                 // Отправка на email
                 // emailService.sendEmail(getUserEmail(userId), "Уведомление", message);
+        }
+
+        private String toReceiverKey(Object receiverId) {
+                return receiverId != null ? receiverId.toString() : "";
         }
 
         private String formatAdvertisementMessage(AdvertisementEvent event) {
