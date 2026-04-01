@@ -10,12 +10,29 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-        spring.json.type.mapping: event:com.mipt.notification.event.AdvertisementEvent
-        spring.json.value.default.type: com.mipt.notification.event.AdvertisementEvent
+        spring.json.type.mapping: |
+          ADVERTISEMENT:com.mipt.notification.event.AdvertisementEvent,
+          USER:com.mipt.notification.event.UserEvent,
+          CHAT:com.mipt.notification.event.ChatEvent,
+          FAVORITE:com.mipt.notification.event.FavoriteEvent,
+          SEARCH_HISTORY:com.mipt.notification.event.SearchHistoryEvent,
+          WALLET:com.mipt.notification.event.WalletEvent,
+          MAINPAGE:com.mipt.notification.event.MainPageEvent,
+          com.mipt.advertisement.event.AdvertisementEvent:com.mipt.notification.event.AdvertisementEvent,
+          com.mipt.user.event.UserEvent:com.mipt.notification.event.UserEvent,
+          com.mipt.chat.event.ChatEvent:com.mipt.notification.event.ChatEvent,
+          com.mipt.search.event.SearchHistoryEvent:com.mipt.notification.event.SearchHistoryEvent,
+          com.mipt.wallet.event.WalletEvent:com.mipt.notification.event.WalletEvent,
+          com.mipt.mainpage.event.MainPageEvent:com.mipt.notification.event.MainPageEvent
+        spring.json.value.default.type: com.mipt.notification.event.BaseEvent
       auto-offset-reset: earliest
       enable-auto-commit: false
+      max-poll-records: 10
     listener:
       ack-mode: manual
+      poll-timeout: 3000
+    properties:
+      session.timeout.ms: 30000
 
   mail:
     host: smtp.gmail.com
@@ -45,6 +62,12 @@ logging:
 kafka:
   topic:
     advertisement-events: advertisement-events
+    user-events: user-events
+    chat-events: chat-events
+    favorite-events: favorite-events
+    search-history-events: search-history-events
+    wallet-events: wallet-events
+    mainpage-events: mainpage-events
 
 telegram:
   bot:

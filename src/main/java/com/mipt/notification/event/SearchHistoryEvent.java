@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Data
@@ -16,12 +15,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AdvertisementEvent extends BaseEvent {
-    private UUID advertisementId;
-    private UUID authorId;
-    private String advertisementName;
-    private String category;
-    private Long price;
-    private String status;
-    private String details;
+public class SearchHistoryEvent extends BaseEvent {
+ private UUID userId;
+ private String searchQuery;
+ private String category;
+ private String filters;
 }
