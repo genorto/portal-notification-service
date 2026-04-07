@@ -3,6 +3,11 @@ spring:
     name: notification-service
 
   kafka:
+    admin:
+      auto-create: true  # Автоматически создавать топики
+    producer:
+      properties:
+        allow.auto.create.topics: true
     bootstrap-servers: localhost:9092
     consumer:
       group-id: notification-service
@@ -18,13 +23,16 @@ spring:
           SEARCH_HISTORY:com.mipt.notification.event.SearchHistoryEvent,
           WALLET:com.mipt.notification.event.WalletEvent,
           MAINPAGE:com.mipt.notification.event.MainPageEvent,
+          REVIEW:com.mipt.notification.event.ReviewEvent,
           com.mipt.advertisement.event.AdvertisementEvent:com.mipt.notification.event.AdvertisementEvent,
           com.mipt.user.event.UserEvent:com.mipt.notification.event.UserEvent,
           com.mipt.chat.event.ChatEvent:com.mipt.notification.event.ChatEvent,
           com.mipt.search.event.SearchHistoryEvent:com.mipt.notification.event.SearchHistoryEvent,
           com.mipt.wallet.event.WalletEvent:com.mipt.notification.event.WalletEvent,
-          com.mipt.mainpage.event.MainPageEvent:com.mipt.notification.event.MainPageEvent
+          com.mipt.mainpage.event.MainPageEvent:com.mipt.notification.event.MainPageEvent,
+          com.mipt.review.event.ReviewEvent:com.mipt.notification.event.ReviewEvent
         spring.json.value.default.type: com.mipt.notification.event.BaseEvent
+        spring.json.use.type.headers: true
       auto-offset-reset: earliest
       enable-auto-commit: false
       max-poll-records: 10
@@ -68,6 +76,7 @@ kafka:
     search-history-events: search-history-events
     wallet-events: wallet-events
     mainpage-events: mainpage-events
+    review-events: review-events
 
 telegram:
   bot:
