@@ -13,14 +13,14 @@ public class TelegramNotificationService {
  private final NotificationBot notificationBot;
  private final UserRegistrationService registrationService;
 
- @Value("${telegram.bot.token:}")
- private String botToken;
+  @Value("${telegram.bot.token:}")
+  private String botToken;
 
- @Value("${telegram.bot.default-chat-id:}")
- private String defaultChatId;
+  @Value("${telegram.bot.default-chat-id:}")
+  private String defaultChatId;
 
- @Value("${telegram.bot.chat-id-map:}")
- private String chatIdMap;
+  @Value("${telegram.bot.chat-id-map:}")
+  private String chatIdMap;
 
  public TelegramNotificationService(NotificationBot notificationBot,
          UserRegistrationService registrationService) {
@@ -80,8 +80,6 @@ public class TelegramNotificationService {
       log.warn("Invalid chatId format in mapping: {}", keyValue[1]);
      }
     }
-   }
-  }
 
   // 3. Используем default chat id (для тестирования)
   if (StringUtils.hasText(defaultChatId)) {
