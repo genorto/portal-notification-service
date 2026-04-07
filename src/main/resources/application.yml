@@ -80,7 +80,11 @@ kafka:
 
 telegram:
   bot:
-    token: ${TELEGRAM_BOT_TOKEN:your-bot-token}
-    username: ${TELEGRAM_BOT_USERNAME:your-bot-username}
+    token: ${TELEGRAM_BOT_TOKEN:8753485117:AAGjDdmDK5YdjOhui_vc2E549v4SLIrEgUQ}
+    username: ${TELEGRAM_BOT_USERNAME:portal_notification_bot}
+    enabled: ${TELEGRAM_BOT_ENABLED:true}
     default-chat-id: ${TELEGRAM_DEFAULT_CHAT_ID:}
     chat-id-map: ${TELEGRAM_CHAT_ID_MAP:}
+user:
+  service:
+    url: ${USER_SERVICE_URL:http://localhost:8080}

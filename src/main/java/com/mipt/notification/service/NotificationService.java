@@ -86,9 +86,6 @@ public class NotificationService {
 
     private void sendToChannels(String userId, String message) {
         telegramNotificationService.sendMessage(userId, message);
-
-        // Отправка на email
-        // emailService.sendEmail(getUserEmail(userId), "Уведомление", message);
     }
 
     private String toReceiverKey(Object receiverId) {
