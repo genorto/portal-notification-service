@@ -1,7 +1,6 @@
 package com.mipt.notification.service;
 
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -11,10 +10,17 @@ import org.springframework.web.client.RestClient;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class TelegramNotificationService {
 
- private final RestClient restClient = RestClient.create();
+ private final RestClient restClient;
+
+ public TelegramNotificationService() {
+  this(RestClient.create());
+ }
+
+ TelegramNotificationService(RestClient restClient) {
+  this.restClient = restClient;
+ }
 
  @Value("${telegram.bot.token:}")
  private String botToken;
@@ -39,13 +45,13 @@ public class TelegramNotificationService {
 
   try {
    restClient.post()
-     .uri("https://api.telegram.org/bot{token}/sendMessage", botToken)
-     .contentType(MediaType.APPLICATION_JSON)
-     .body(Map.of(
-       "chat_id", chatId,
-       "text", message))
-     .retrieve()
-     .toBodilessEntity();
+           .uri("https://api.telegram.org/bot{token}/sendMessage", botToken)
+           .contentType(MediaType.APPLICATION_JSON)
+           .body(Map.of(
+                   "chat_id", chatId,
+                   "text", message))
+           .retrieve()
+           .toBodilessEntity();
 
    log.info("Telegram message sent to chatId={}", chatId);
   } catch (Exception ex) {
