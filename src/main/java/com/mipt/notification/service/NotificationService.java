@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class NotificationService {
 
     private final TelegramNotificationService telegramNotificationService;
+    private final EmailNotificationService emailNotificationService;
 
     public void sendNotification(AdvertisementEvent event) {
         log.info("Processing notification for event: {}", event.getEventType());
@@ -29,7 +30,7 @@ public class NotificationService {
     public void sendUserNotification(UserEvent event) {
         log.info("Processing user notification for event: {}", event.getEventType());
         String message = formatUserMessage(event);
-        sendToChannels(toReceiverKey(event.getUserId()), message);
+        sendToChannels(toReceiverKey(event.getUserId()), event.getEmail(), message);
         log.info("User notification sent: {}", message);
     }
 
@@ -85,7 +86,12 @@ public class NotificationService {
     }
 
     private void sendToChannels(String userId, String message) {
+        sendToChannels(userId, null, message);
+    }
+
+    private void sendToChannels(String userId, String fallbackEmail, String message) {
         telegramNotificationService.sendMessage(userId, message);
+        emailNotificationService.sendMessage(userId, fallbackEmail, message);
     }
 
     private String toReceiverKey(Object receiverId) {
