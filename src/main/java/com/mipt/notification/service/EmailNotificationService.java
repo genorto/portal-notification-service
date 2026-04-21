@@ -53,6 +53,24 @@ public class EmailNotificationService {
         }
     }
 
+    public void sendActivationEmail(String recipientEmail, String subject, String body) {
+        if (!StringUtils.hasText(defaultFrom)) {
+            log.warn("spring.mail.username не настроен. Activation email не отправлен. URL: {}", body);
+            return;
+        }
+        try {
+            SimpleMailMessage mail = new SimpleMailMessage();
+            mail.setFrom(defaultFrom);
+            mail.setTo(recipientEmail);
+            mail.setSubject(subject);
+            mail.setText(body);
+            mailSender.send(mail);
+            log.info("Activation email отправлен на {}", recipientEmail);
+        } catch (Exception e) {
+            log.error("Ошибка отправки activation email на {}: {}", recipientEmail, e.getMessage(), e);
+        }
+    }
+
     private String resolveEmail(String receiverKey, String fallbackEmail) {
         if (StringUtils.hasText(receiverKey)) {
             String emailFromBackend = userServiceClient.getEmailByUserId(receiverKey);
