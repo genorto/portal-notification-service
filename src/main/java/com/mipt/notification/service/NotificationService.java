@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class NotificationService {
 
     private final TelegramNotificationService telegramNotificationService;
+    private final EmailNotificationService emailNotificationService;
 
     public void sendNotification(AdvertisementEvent event) {
         log.info("Processing notification for event: {}", event.getEventType());
@@ -28,8 +29,19 @@ public class NotificationService {
 
     public void sendUserNotification(UserEvent event) {
         log.info("Processing user notification for event: {}", event.getEventType());
+        if ("USER_REGISTERED".equals(event.getEventType())) {
+            String activationUrl = event.getDetails();
+            String subject = "Активация аккаунта Portal МФТИ";
+            String body = String.format(
+                "Здравствуйте, %s!\n\nДля активации вашего аккаунта перейдите по ссылке:\n%s\n\nСсылка действительна до первого использования.\n\nPortal МФТИ",
+                event.getUsername(), activationUrl
+            );
+            emailNotificationService.sendActivationEmail(event.getEmail(), subject, body);
+            log.info("Activation email queued for {}", event.getEmail());
+            return;
+        }
         String message = formatUserMessage(event);
-        sendToChannels(toReceiverKey(event.getUserId()), message);
+        sendToChannels(toReceiverKey(event.getUserId()), event.getEmail(), message);
         log.info("User notification sent: {}", message);
     }
 
@@ -85,7 +97,12 @@ public class NotificationService {
     }
 
     private void sendToChannels(String userId, String message) {
+        sendToChannels(userId, null, message);
+    }
+
+    private void sendToChannels(String userId, String fallbackEmail, String message) {
         telegramNotificationService.sendMessage(userId, message);
+        emailNotificationService.sendMessage(userId, fallbackEmail, message);
     }
 
     private String toReceiverKey(Object receiverId) {
