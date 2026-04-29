@@ -37,7 +37,7 @@ spring:
       enable-auto-commit: false
       max-poll-records: 10
     listener:
-      ack-mode: manual
+      ack-mode: record
       poll-timeout: 3000
     properties:
       session.timeout.ms: 30000
@@ -80,7 +80,7 @@ kafka:
 
 telegram:
   bot:
-    token: ${TELEGRAM_BOT_TOKEN:8753485117:AAGjDdmDK5YdjOhui_vc2E549v4SLIrEgUQ}
+    token: ${TELEGRAM_BOT_TOKEN:}
     username: ${TELEGRAM_BOT_USERNAME:portal_notification_bot}
     enabled: ${TELEGRAM_BOT_ENABLED:true}
     default-chat-id: ${TELEGRAM_DEFAULT_CHAT_ID:}
