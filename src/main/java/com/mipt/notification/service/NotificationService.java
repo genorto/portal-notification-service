@@ -194,10 +194,32 @@ public class NotificationService {
             case "WALLET_CREATED" ->
                     String.format("💳 Кошелек создан для пользователя %s", event.getWalletOwnerId());
 
-            case "WALLET_OPERATION_CREATED" -> String.format("💸 Операция %s на сумму %d (%s)",
-                    event.getOperationType(), event.getAmount(), event.getTitle());
+            case "WALLET_OPERATION_CREATED" -> formatWalletOperation(event);
 
             default -> String.format("ℹ️ Событие кошелька: %s", event.getEventType());
+        };
+    }
+
+    private String formatWalletOperation(WalletEvent event) {
+        String adName = event.getTitle() != null
+                ? event.getTitle().replaceAll("^\\[[^\\]]+\\]\\s*", "")
+                : "товар";
+        long amount = event.getAmount() != null ? event.getAmount() : 0;
+        boolean isOwner = event.getWalletOwnerId() != null
+                && event.getWalletOwnerId().equals(event.getClientId());
+
+        return switch (event.getOperationType() != null ? event.getOperationType() : "") {
+            case "RESERVE" -> String.format(
+                    "🔒 Зарезервировано %d t\n\n«%s»\n\nТокены заморожены до подтверждения получения.",
+                    amount, adName);
+            case "PAY" -> isOwner
+                    ? String.format("💸 Списано %d t\n\n«%s»\n\nОплата продавцу подтверждена.", amount, adName)
+                    : String.format("✅ Получено %d t\n\n«%s»\n\nПокупатель подтвердил получение.", amount, adName);
+            case "CANCEL" -> String.format(
+                    "↩️ Резерв отменён: %d t возвращены\n\n«%s»", amount, adName);
+            case "REFUND" -> String.format(
+                    "💰 Возврат %d t\n\n«%s»", amount, adName);
+            default -> String.format("💳 Операция %s: %d t", event.getOperationType(), amount);
         };
     }
 

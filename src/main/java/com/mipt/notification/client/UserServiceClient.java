@@ -65,6 +65,64 @@ public class UserServiceClient {
     }
 
     /**
+     * Сохраняет Telegram chatId для пользователя в основном сервисе.
+     */
+    public void saveTelegramChatId(String userId, Long chatId) {
+        try {
+            String url = userServiceUrl + "/api/users/" + URLEncoder.encode(userId, StandardCharsets.UTF_8)
+                    + "/telegram-chat?chatId=" + chatId;
+            restTemplate.postForObject(url, null, Void.class);
+            log.info("Saved telegramChatId={} for userId={}", chatId, userId);
+        } catch (Exception e) {
+            log.error("Failed to save telegramChatId for userId={}: {}", userId, e.getMessage());
+        }
+    }
+
+    /**
+     * Удаляет привязку Telegram chatId при /logout.
+     */
+    public void removeTelegramChatId(String userId) {
+        try {
+            String url = userServiceUrl + "/api/users/" + URLEncoder.encode(userId, StandardCharsets.UTF_8)
+                    + "/telegram-chat";
+            restTemplate.delete(url);
+            log.info("Removed telegramChatId for userId={}", userId);
+        } catch (Exception e) {
+            log.warn("Failed to remove telegramChatId for userId={}: {}", userId, e.getMessage());
+        }
+    }
+
+    /**
+     * Получает Telegram chatId для пользователя из базы данных.
+     */
+    public Long getTelegramChatId(String userId) {
+        if (userId == null || userId.isBlank()) return null;
+        try {
+            String url = userServiceUrl + "/api/users/" + URLEncoder.encode(userId, StandardCharsets.UTF_8)
+                    + "/telegram-chat";
+            return restTemplate.getForObject(url, Long.class);
+        } catch (Exception e) {
+            log.debug("No telegram chatId for userId={}: {}", userId, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Поиск системного userId по Telegram-юзернейму (без @).
+     */
+    public String getUserIdByTelegramUsername(String telegramUsername) {
+        if (telegramUsername == null || telegramUsername.isBlank()) return null;
+        String clean = telegramUsername.startsWith("@") ? telegramUsername.substring(1) : telegramUsername;
+        try {
+            String url = userServiceUrl + "/api/users/by-telegram/" + URLEncoder.encode(clean, StandardCharsets.UTF_8);
+            return restTemplate.getForObject(url, String.class);
+        } catch (Exception e) {
+            log.debug("No user found for telegram username @{}: {}", clean, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Получение email пользователя по его системному ID.
      */
     public String getEmailByUserId(String userId) {

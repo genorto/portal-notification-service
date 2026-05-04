@@ -80,7 +80,7 @@ public class NotificationBot extends TelegramLongPollingBot {
     private void handleCommand(Long chatId, String command, String userName) {
         switch (command) {
             case "/start":
-                sendMessage(chatId, getWelcomeMessage(userName));
+                handleStart(chatId, userName);
                 break;
 
             case "/login":
@@ -104,6 +104,28 @@ public class NotificationBot extends TelegramLongPollingBot {
                                 "/logout - выйти из системы");
                 break;
         }
+    }
+
+    private void handleStart(Long chatId, String tgUsername) {
+        if (registrationService.isAuthenticated(chatId)) {
+            String login = registrationService.getLoginByChatId(chatId);
+            sendMessage(chatId, "✅ Вы уже подключены как *" + login + "*\n\nУведомления активны. /status — проверить, /logout — отключить.");
+            return;
+        }
+
+        if (tgUsername != null && !tgUsername.isBlank()) {
+            String userId = userServiceClient.getUserIdByTelegramUsername(tgUsername);
+            if (userId != null) {
+                sendMessage(chatId,
+                    "👋 Привет, @" + tgUsername + "!\n\n" +
+                    "Я нашёл ваш аккаунт в Portal МФТИ.\n\n" +
+                    "Для получения уведомлений введите /login и подтвердите логин и пароль.\n\n" +
+                    "После входа вы будете получать сюда уведомления о новых сообщениях, ставках в аукционах, изменениях кошелька и многом другом.");
+                return;
+            }
+        }
+
+        sendMessage(chatId, getWelcomeMessage(tgUsername));
     }
 
     private void startLogin(Long chatId) {
@@ -138,13 +160,18 @@ public class NotificationBot extends TelegramLongPollingBot {
             String userId = userServiceClient.getUserId(login);
             if (userId != null) {
                 registrationService.registerUser(userId, chatId, login);
+                // Сохраняем chatId в БД — переживёт перезапуск сервиса
+                userServiceClient.saveTelegramChatId(userId, chatId);
                 sendMessage(chatId, String.format(
                         "✅ Вход выполнен успешно!\n\n" +
-                                "Добро пожаловать, %s!\n" +
-                                "Ваш ID в системе: %s\n\n" +
-                                "Теперь вы будете получать уведомления.\n" +
-                                "Для выхода используйте /logout",
-                        login, userId
+                                "Добро пожаловать, %s!\n\n" +
+                                "Теперь вы будете получать уведомления о:\n" +
+                                "• Новых сообщениях в чатах\n" +
+                                "• Ставках в аукционах\n" +
+                                "• Операциях с кошельком\n" +
+                                "• Изменениях объявлений\n\n" +
+                                "Для отключения используйте /logout",
+                        login
                 ));
                 log.info("User {} successfully logged in with chatId: {}", login, chatId);
             } else {
@@ -162,11 +189,12 @@ public class NotificationBot extends TelegramLongPollingBot {
 
     private void logout(Long chatId) {
         if (registrationService.isAuthenticated(chatId)) {
+            String userId = registrationService.getSystemUserIdByChatId(chatId);
             String login = registrationService.getLoginByChatId(chatId);
             registrationService.unregisterUser(login);
-            sendMessage(chatId,
-                    "✅ Вы вышли из системы.\n\n" +
-                            "Для входа используйте /login");
+            // Удаляем chatId из БД — уведомления больше не придут
+            if (userId != null) userServiceClient.removeTelegramChatId(userId);
+            sendMessage(chatId, "✅ Вы вышли из системы. Уведомления отключены.\n\nДля входа используйте /login");
             log.info("User {} logged out", login);
         } else {
             sendMessage(chatId, "❌ Вы не авторизованы. Используйте /login");
@@ -174,21 +202,18 @@ public class NotificationBot extends TelegramLongPollingBot {
     }
 
     private void checkStatus(Long chatId) {
-        if (registrationService.isAuthenticated(chatId)) {
-            String userId = registrationService.getSystemUserIdByChatId(chatId);
+        boolean inMemory = registrationService.isAuthenticated(chatId);
+        boolean inDb = userServiceClient.getTelegramChatId(
+                registrationService.getSystemUserIdByChatId(chatId) != null
+                        ? registrationService.getSystemUserIdByChatId(chatId)
+                        : "") != null;
+
+        if (inMemory) {
             String login = registrationService.getLoginByChatId(chatId);
             sendMessage(chatId, String.format(
-                    "✅ Вы авторизованы!\n\n" +
-                            "Логин: %s\n" +
-                            "ID в системе: %s\n\n" +
-                            "Вы будете получать уведомления, связанные с вашим аккаунтом.\n" +
-                            "Для выхода используйте /logout",
-                    login, userId
-            ));
+                    "✅ Уведомления активны\n\nАккаунт: %s\n\nДля отключения: /logout", login));
         } else {
-            sendMessage(chatId,
-                    "❌ Вы не авторизованы.\n\n" +
-                            "Для входа используйте /login");
+            sendMessage(chatId, "❌ Уведомления отключены.\n\nДля входа: /login");
         }
     }
 
