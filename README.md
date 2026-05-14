@@ -43,3 +43,9 @@ mvn spring-boot:run
 - `src/main/java/com/mipt/notification/consumer/`
 - `src/main/java/com/mipt/notification/telegram/`
 - `src/main/resources/application.yml`
+
+## Ментор проекта
+
+- **ФИО: Бобряков Д.С.**
+- **Контакты: @DmitryBobryakov (Telegram)**
+- **Проект реализуется в рамках программы «Высшая школа программной инженерии» МФТИ при поддержке компании OOO MWS.**
